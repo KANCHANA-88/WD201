@@ -1,32 +1,39 @@
-const { todo } = require("node:test");
-
 const todoList = () => {
-  all = []
+  const all = [];
+
   const add = (todoItem) => {
-    all.push(todoItem)
-  }
+    all.push(todoItem);
+  };
+
   const markAsComplete = (index) => {
-    all[index].completed = true
-  }
+    all[index].completed = true;
+  };
 
   const overdue = () => {
-    const today = new Date();
-    return all.filter(todoItem => !todoItem.completed && new Date(todoItem.dueDate) < today);
-  }
+    const today = new Date().toISOString().split('T')[0];
+    return all.filter(todo => !todo.completed && todo.dueDate < today);
+  };
 
   const dueToday = () => {
-    const today = new Date().toISOString().split("T")[O];
-    return all.filter(todoItem => !todoItem.completed && todoItem.dueDate === today);
-  }
+    const today = new Date().toISOString().split('T')[0];
+    return all.filter(todo => !todo.completed && todo.dueDate === today);
+  };
 
   const dueLater = () => {
-   const today = new Date();
-   return all.filter(todoItem => !todoItem.completed && new Date(todoItem.dueDate) > today);
-  }
+    const today = new Date().toISOString().split('T')[0];
+    return all.filter(todo => !todo.completed && todo.dueDate > today);
+  };
 
   const toDisplayableList = (list) => {
-    return list.map(todoItem => `[${todoItem.completed ? 'X' : ' '}] ${item.title} ${item.dueDate ? item.dueDate : ''}`).jon('\n') ;
-  }
+    return list.map(todo => {
+      let status = todo.completed ? '[x]' : '[ ]';
+      if (todo.dueDate === new Date().toISOString().split('T')[0]) {
+        return `${status} ${todo.title}`;
+      } else {
+        return `${status} ${todo.title} ${todo.dueDate}`;
+      }
+    }).join('\n');
+  };
 
   return {
     all,
