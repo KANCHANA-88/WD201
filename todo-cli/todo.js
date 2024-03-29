@@ -1,3 +1,7 @@
+const formattedDate = d => {
+  return d.toISOString().split("T")[0]
+}
+
 const todoList = () => {
   const all = [];
 
@@ -9,39 +13,36 @@ const todoList = () => {
     all[index].completed = true;
   };
 
- const overdue = () => {
-  const today = formattedDate(new Date());
-  return all.filter(todo => !todo.completed && todo.dueDate < today);
-};
+  const overdue = () => {
+    const today = formattedDate(new Date());
+    return all.filter(todo => !todo.completed && todo.dueDate < today);
+  };
 
-const dueToday = () => {
-  const today = formattedDate(new Date());
-  return all.filter(todo => todo.dueDate === today);
-};
+  const dueToday = () => {
+    const today = formattedDate(new Date());
+    return all.filter(todo => todo.dueDate === today);
+  };
 
+  const dueLater = () => {
+    const today = formattedDate(new Date());
+    return all.filter(todo => !todo.completed && todo.dueDate > today);
+  };
 
+  const toDisplayableList = (list) => {
+    let displayableList = '';
 
-const dueLater = () => {
-  const today = formattedDate(new Date());
-  return all.filter(todo => !todo.completed && todo.dueDate > today);
-};
- const toDisplayableList = (list) => {
-  let displayableList = '';
+    list.forEach(todo => {
+      let status = todo.completed ? '[x]' : '[ ]';
+      let formattedTodo = `${status} ${todo.title}`;
+      if (todo.dueDate === today) {
+        displayableList += `${formattedTodo}\n`;
+      } else {
+        displayableList += `${formattedTodo} ${todo.dueDate}\n`;
+      }
+    });
 
-  list.forEach(todo => {
-    let status = todo.completed ? '[x]' : '[ ]';
-    let formattedTodo = `${status} ${todo.title}`;
-    if (todo.dueDate === today) {
-      displayableList += `${formattedTodo}\n`;
-    } else {
-      displayableList += `${formattedTodo} ${todo.dueDate}\n`;
-    }
-  });
-
-  return displayableList.trim();
-};
-
-
+    return displayableList.trim();
+  };
 
   return {
     all,
@@ -53,6 +54,8 @@ const dueLater = () => {
     toDisplayableList
   };
 };
+
+module.exports = todoList;
 
 // ####################################### #
 // DO NOT CHANGE ANYTHING BELOW THIS LINE. #
@@ -99,4 +102,3 @@ let formattedItemsDueLater = todos.toDisplayableList(itemsDueLater)
 console.log(formattedItemsDueLater)
 console.log("\n\n") */
 
-module.exports = todoList;
