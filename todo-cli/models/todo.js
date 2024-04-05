@@ -1,89 +1,31 @@
 // models/todo.js
+
 'use strict';
-const { Model, Op } = require('sequelize');
+const { Model } = require('sequelize');
+
 module.exports = (sequelize, DataTypes) => {
   class Todo extends Model {
-    /**
-     * Helper method for defining associations.
-     * This method is not a part of Sequelize lifecycle.
-     * The `models/index` file will call this method automatically.
-     */
-    static async addTask(params) {
-      return await Todo.create(params);
+    static associate(models) {
+      // Define associations here
     }
-    static async showList() {
-  console.log("My Todo list \n");
 
-  console.log("Overdue");
-  const overdueTasks = await Todo.overdue();
-  overdueTasks.forEach(task => console.log(task.displayableString()));
-  console.log("\n");
-
-  console.log("Due Today");
-  const todayTasks = await Todo.dueToday();
-  todayTasks.forEach(task => console.log(task.displayableString()));
-  console.log("\n");
-
-  console.log("Due Later");
-  const laterTasks = await Todo.dueLater();
-  laterTasks.forEach(task => console.log(task.displayableString()));
-}
-
-    static async overdue() {
-  return await Todo.findAll({
-    where: {
-      dueDate: {
-        [Op.lt]: new Date(), // Find tasks with due dates earlier than now
-      },
-      completed: false, // Only include incomplete tasks
-    },
-  });
-}
-
-static async dueToday() {
-  const today = new Date();
-  const startOfDay = new Date(today.getFullYear(), today.getMonth(), today.getDate());
-  const endOfDay = new Date(today.getFullYear(), today.getMonth(), today.getDate() + 1);
-
-  return await Todo.findAll({
-    where: {
-      dueDate: {
-        [Op.gte]: startOfDay,
-        [Op.lt]: endOfDay,
-      },
-      completed: false,
-    },
-  });
-}
-
-static async dueLater() {
-  const today = new Date();
-  return await Todo.findAll({
-    where: {
-      dueDate: {
-        [Op.gt]: today, // Find tasks with due dates later than now
-      },
-      completed: false,
-    },
-  });
-}
-
-static async markAsComplete(id) {
-  const todo = await Todo.findByPk(id);
-  if (todo) {
-    todo.completed = true;
-    await todo.save();
-    return todo;
-  } else {
-    return null; // Task not found
-  }
-}
-
-    displayableString() {
-      let checkbox = this.completed ? "[x]" : "[ ]";
-      return `${this.id}. ${checkbox} ${this.title} ${this.dueDate}`;
+    static async markAsComplete(id) {
+      try {
+        const todo = await this.findByPk(id);
+        if (!todo) {
+          throw new Error(`Todo with id ${id} not found.`);
+        }
+        todo.completed = true;
+        await todo.save();
+        return todo;
+      } catch (error) {
+        throw new Error(`Error marking todo as complete: ${error.message}`);
+      }
     }
+
+    // Other model methods...
   }
+
   Todo.init({
     title: DataTypes.STRING,
     dueDate: DataTypes.DATEONLY,
@@ -92,5 +34,6 @@ static async markAsComplete(id) {
     sequelize,
     modelName: 'Todo',
   });
+
   return Todo;
 };

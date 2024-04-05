@@ -1,20 +1,24 @@
-const argv = require('minimist')(process.argv.slice(2));
+// completeTodo.js
+
 const db = require("./models/index");
 
 const markAsComplete = async (id) => {
   try {
     await db.Todo.markAsComplete(id);
+    console.log("Todo marked as complete successfully.");
   } catch (error) {
-    console.error(error);
+    console.error("Error marking todo as complete:", error);
   }
 };
 
 (async () => {
-  const id = parseInt(argv.id); // Parse the id as an integer
-  if(isNaN(id)) { // Check if it's not a number
-    throw new Error("The id needs to be an integer");
+  const argv = require('minimist')(process.argv.slice(2));
+  const { id } = argv;
+
+  if (!id || isNaN(id)) {
+    console.error("Please provide a valid todo ID.");
+    return;
   }
 
   await markAsComplete(id);
-  await db.Todo.showList();
 })();
