@@ -4,9 +4,10 @@
   "description": "",
   "main": "todo.js",
   "scripts": {
-    "lint": "eslint .",
-    "format": "prettier --write .",
-    "test": "jest"
+    "db:create:test": "NODE_ENV=test npx sequelize-cli db:create",
+    "pretest": "NODE_ENV=test npx sequelize-cli db:drop && NODE_ENV=test npx sequelize-cli db:create",
+   "test": "NODE_ENV=test jest --detectOpenHandles",
+    "prepare": "husky install"
   },
   "author": "kanchana <kanchu.it88@gmail.com>",
   "license": "ISC",
