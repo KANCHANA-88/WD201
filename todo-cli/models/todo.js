@@ -60,7 +60,21 @@ static async markAsComplete(id) {
 
     displayableString() {
   let checkbox = this.completed ? '[x]' : '[ ]';
-  let dueDateString = this.completed ? '' : ` ${this.dueDate}`;
+  let dueDateString = '';
+
+  if (!this.completed) {
+    const today = new Date();
+    const dueDate = new Date(this.dueDate);
+
+    if (dueDate.getDate() === today.getDate() &&
+        dueDate.getMonth() === today.getMonth() &&
+        dueDate.getFullYear() === today.getFullYear()) {
+      dueDateString = ''; // If due today, don't display the due date
+    } else {
+      dueDateString = ` ${this.dueDate}`; // Otherwise, display the due date
+    }
+  }
+
   return `${this.id}. ${checkbox} ${this.title}${dueDateString}`;
 }
   }
