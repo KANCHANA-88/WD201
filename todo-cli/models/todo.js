@@ -77,6 +77,16 @@ static async markAsComplete(id) {
     }
   }
 
+  // If completed and past due, remove the due date
+  if (this.completed && new Date(this.dueDate) < new Date()) {
+    dueDateString = '';
+  }
+
+  // If completed and due today, remove the due date
+  if (this.completed && new Date(this.dueDate).toDateString() === new Date().toDateString()) {
+    dueDateString = '';
+  }
+
   return `${this.id}. ${checkbox} ${this.title}${dueDateString}`;
 }
   }
