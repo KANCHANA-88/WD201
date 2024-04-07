@@ -58,24 +58,32 @@ static async markAsComplete(id) {
 }
     // Your other static methods
 
-   displayableString() {
+ displayableString() {
   let checkbox = this.completed ? '[x]' : '[ ]';
   let dueDateString = '';
 
-  if (!this.completed) {
-    if (new Date(this.dueDate) > new Date()) {
-      dueDateString = ` ${this.dueDate}`;
-    }
-  } else {
-    if (new Date(this.dueDate) <= new Date()) {
-      dueDateString = ` ${this.dueDate}`;
+  // Check if the todo is completed and past due
+  if (this.completed && new Date(this.dueDate) < new Date()) {
+    dueDateString = ` ${this.dueDate}`; // Include the due date for past-due completed todos
+  }
+
+  // If the todo is not completed or is not past due, handle the due date display as before
+  if (!this.completed || new Date(this.dueDate) >= new Date()) {
+    const today = new Date();
+    const dueDate = new Date(this.dueDate);
+
+    if (dueDate.getDate() === today.getDate() &&
+        dueDate.getMonth() === today.getMonth() &&
+        dueDate.getFullYear() === today.getFullYear()) {
+      dueDateString = ''; // If due today, don't display the due date
+    } else {
+      dueDateString = ` ${this.dueDate}`; // Otherwise, display the due date
     }
   }
 
   return `${this.id}. ${checkbox} ${this.title}${dueDateString}`;
 }
   }
-
   Todo.init(
     {
       title: DataTypes.STRING,
