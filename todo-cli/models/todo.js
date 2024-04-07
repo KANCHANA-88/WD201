@@ -62,8 +62,14 @@ static async markAsComplete(id) {
   let checkbox = this.completed ? '[x]' : '[ ]';
   let dueDateString = '';
 
-  if (this.completed && new Date(this.dueDate) < new Date()) {
-    dueDateString = ` ${this.dueDate}`;
+  if (!this.completed) {
+    if (new Date(this.dueDate) > new Date()) {
+      dueDateString = ` ${this.dueDate}`;
+    }
+  } else {
+    if (new Date(this.dueDate) <= new Date()) {
+      dueDateString = ` ${this.dueDate}`;
+    }
   }
 
   return `${this.id}. ${checkbox} ${this.title}${dueDateString}`;
