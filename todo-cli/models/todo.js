@@ -1,85 +1,110 @@
-'use strict';
-const { Sequelize, Model, DataTypes, Op } = require('sequelize');
+"use strict";
+const { Model } = require("sequelize");
 module.exports = (sequelize, DataTypes) => {
   class Todo extends Model {
+    
     static async addTask(params) {
-      return await Todo.create(params);
+      try {
+        return await Todo.create(params);
+      } catch (error) {
+        console.error("Error adding a task", error);
+      }
     }
 
-   static async showList() {
-  console.log('My Todo-list\n');
-
-  console.log('Overdue');
-  const overdueTodos = await Todo.overdue();
-  overdueTodos.forEach(todo => console.log(`${todo.id}. [ ] ${todo.title} ${todo.dueDate}`));
-  console.log('');
-
-  console.log('Due Today');
-  const dueTodayTodos = await Todo.dueToday(); // Check this line
-  dueTodayTodos.forEach(todo => console.log(`${todo.id}. [x] ${todo.title} ${todo.dueDate}`));
-  console.log('');
-
-  console.log('Due Later');
-  const dueLaterTodos = await Todo.dueLater();
-  dueLaterTodos.forEach(todo => console.log(`${todo.id}. [ ] ${todo.title} ${todo.dueDate}`));
-}
-  static async dueToday() {
-  return await Todo.findAll({
-    where: {
-      dueDate: new Date(),
-      completed: false
+    static async getTasks() {
+      try {
+        return await Todo.findAll();
+      } catch (error) {
+        console.error("Error getting tasks", error);
+      }
     }
-  });
-}
-   static async overdue() {
-  return await Todo.findAll({
-    where: {
-      dueDate: { [Op.lt]: new Date() },
-      completed: false
+
+    static associate(models) {
+      
     }
-  });
-}
+
+    displayableString() {
+      const checkbox = this.completed ? "[x]" : "[ ]";
+      const dueDateISO = new Date(this.dueDate).toISOString().split("T")[0];
+      const date =
+        dueDateISO === new Date().toISOString().split("T")[0] ? "" : dueDateISO;
+      const todoStr = `${this.id}. ${checkbox} ${this.title} ${date}`;
+      return todoStr.trim();
+    }
+
+    static async markAsComplete(id) {
+      try {
+        const todo = await Todo.update({ completed: true }, { where: { id } });
+      } catch (error) {
+        console.error("Error marking a todo as complete", error);
+      }
+    }
+
+    static async overdue() {
+      try {
+        const todos = await Todo.findAll({
+          order: [["id", "ASC"]],
+        });
+        return todos.filter((todo) => new Date(todo.dueDate) < new Date());
+      } catch (error) {
+        console.error("Error getting overdue tasks", error);
+      }
+    }
+
+    static async dueToday() {
+      try {
+        const todos = await Todo.findAll({
+          order: [["id", "ASC"]],
+        });
+        return todos.filter(
+          (todo) =>
+            new Date(todo.dueDate).toDateString() === new Date().toDateString()
+        );
+      } catch (error) {
+        console.error("Error getting due today tasks", error);
+      }
+    }
+
     static async dueLater() {
-  return await Todo.findAll({
-    where: {
-      dueDate: { [Op.gt]: new Date() },
-      completed: false
+      try {
+        const todos = await Todo.findAll({
+          order: [["id", "ASC"]],
+        });
+        return todos.filter((todo) => new Date(todo.dueDate) > new Date());
+      } catch (error) {
+        console.error("Error getting due later tasks", error);
+      }
     }
-  });
-}
-static async markAsComplete(id) {
-  const todo = await Todo.findByPk(id);
-  if (!todo) {
-    throw new Error(`Todo with id ${id} not found`);
-  }
-  todo.completed = true;
-  await todo.save();
-  return todo;
-}
-    // Your other static methods
 
- displayableString() {
-  let checkbox = this.completed ? "[x]" : "[ ]";
-  let dueDateString = '';
+    static async showList() {
+      console.log("My Todo list \n");
 
-  if (this.completed && new Date(this.dueDate) < new Date()) {
-    dueDateString = ` ${this.dueDate}`; // Include due date for completed past-due items
-  }
+      const overdue = await this.overdue();
+      const dueToday = await this.dueToday();
+      const dueLater = await this.dueLater();
 
-  return `${this.id}. ${checkbox} ${this.title}${dueDateString}`;
-}
+      console.log("Overdue");
+      overdue.forEach((todo) => console.log(todo.displayableString()));
+      console.log("");
+
+      console.log("Due Today");
+      dueToday.forEach((todo) => console.log(todo.displayableString()));
+      console.log("");
+
+      console.log("Due Later");
+      dueLater.forEach((todo) => console.log(todo.displayableString()));
+    }
   }
   Todo.init(
     {
       title: DataTypes.STRING,
       dueDate: DataTypes.DATEONLY,
-      completed: DataTypes.BOOLEAN
+      completed: DataTypes.BOOLEAN,
     },
     {
       sequelize,
-      modelName: 'Todo',
+      modelName: "Todo",
     }
   );
-
   return Todo;
 };
