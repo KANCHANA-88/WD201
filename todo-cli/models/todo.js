@@ -62,13 +62,9 @@ static async markAsComplete(id) {
   let checkbox = this.completed ? '[x]' : '[ ]';
   let dueDateString = '';
 
-  // Check if the todo is completed and past due
-  if (this.completed && new Date(this.dueDate) < new Date()) {
-    dueDateString = ` ${this.dueDate}`; // Include the due date for past-due completed todos
-  }
-
-  // If the todo is not completed or is not past due, handle the due date display as before
-  if (!this.completed || new Date(this.dueDate) >= new Date()) {
+  if (this.completed) {
+    dueDateString = ` ${this.dueDate}`; // Display due date for completed items
+  } else {
     const today = new Date();
     const dueDate = new Date(this.dueDate);
 
