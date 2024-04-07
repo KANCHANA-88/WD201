@@ -59,32 +59,11 @@ static async markAsComplete(id) {
     // Your other static methods
 
  displayableString() {
-  let checkbox = this.completed ? '[x]' : '[ ]';
+  let checkbox = this.completed ? "[x]" : "[ ]";
   let dueDateString = '';
 
-  if (this.completed) {
-    dueDateString = ` ${this.dueDate}`; // Display due date for completed items
-  } else {
-    const today = new Date();
-    const dueDate = new Date(this.dueDate);
-
-    if (dueDate.getDate() === today.getDate() &&
-        dueDate.getMonth() === today.getMonth() &&
-        dueDate.getFullYear() === today.getFullYear()) {
-      dueDateString = ''; // If due today, don't display the due date
-    } else {
-      dueDateString = ` ${this.dueDate}`; // Otherwise, display the due date
-    }
-  }
-
-  // If completed and past due, remove the due date
   if (this.completed && new Date(this.dueDate) < new Date()) {
-    dueDateString = '';
-  }
-
-  // If completed and due today, remove the due date
-  if (this.completed && new Date(this.dueDate).toDateString() === new Date().toDateString()) {
-    dueDateString = '';
+    dueDateString = ` ${this.dueDate}`; // Include due date for completed past-due items
   }
 
   return `${this.id}. ${checkbox} ${this.title}${dueDateString}`;
