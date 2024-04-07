@@ -59,9 +59,10 @@ static async markAsComplete(id) {
     // Your other static methods
 
     displayableString() {
-      let checkbox = this.completed ? '[x]' : '[ ]';
-      return `${this.id}. ${checkbox} ${this.title} ${this.dueDate}`;
-    }
+  let checkbox = this.completed ? '[x]' : '[ ]';
+  let dueDateString = this.completed ? '' : ` ${this.dueDate}`;
+  return `${this.id}. ${checkbox} ${this.title}${dueDateString}`;
+}
   }
 
   Todo.init(
