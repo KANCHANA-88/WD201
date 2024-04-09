@@ -1,6 +1,7 @@
 {
   "name": "todo-manager",
   "version": "1.0.0",
+  "description": "",
   "main": "index.js",
   "scripts": {
     "db:create:test": "SET NODE_ENV=test && npx sequelize-cli db:create",
@@ -34,6 +35,5 @@
     "prettier": "^3.2.5",
     "sequelize-cli": "^6.6.2",
     "supertest": "^6.3.4"
-  },
-  "description": ""
+  }
 }
