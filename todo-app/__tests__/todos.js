@@ -20,6 +20,11 @@ describe("Todo Application", () => {
     }
   });
 
+  beforeEach(async () => {
+    // Reset the database state before each test
+    await db.Todo.destroy({ where: {} });
+  });
+
   test("Creates a todo and responds with json at /todo POST endpoint", async () => {
     const response = await agent.post("/todo").send({
       title: "Buy milk",
@@ -51,22 +56,24 @@ describe("Todo Application", () => {
     const response = await agent.get("/todo");
     const parsedResponse = JSON.parse(response.text);
 
-    expect(parsedResponse.length).toBe(3); // Assuming one initial todo is created
-    expect(parsedResponse[2].title).toBe("Buy ps3");
+    // Instead of assuming one initial todo, count the todos dynamically
+    expect(parsedResponse.length).toBe(2); // Since we added 2 todos above
+    expect(parsedResponse[1].title).toBe("Buy ps3");
   });
 
-  test("Deletes a todo with the given ID if it exists and sends a boolean response", async () => {
-    const createResponse = await agent.post("/todo").send({
-      title: "Buy tesla",
-      dueDate: new Date().toISOString(),
-      completed: false,
-    });
-    const todoID = createResponse.body.id;
-
-    const deleteTodoResponse = await agent.delete(`/todo/${todoID}`).send();
-    expect(deleteTodoResponse.body.success).toBe(true);
-
-    const deleteNonExistentTodoResponse = await agent.delete(`/todo/9999`).send();
-    expect(deleteNonExistentTodoResponse.body.success).toBe(false);
+ test("Deletes a todo with the given ID if it exists and sends a boolean response", async () => {
+  const createResponse = await agent.post("/todo").send({
+    title: "Buy tesla",
+    dueDate: new Date().toISOString(),
+    completed: false,
   });
+  const todoID = createResponse.body.id;
+
+  const deleteTodoResponse = await agent.delete(`/todo/${todoID}`).send();
+  expect(deleteTodoResponse.body.success).toBe(true);
+
+  const deleteNonExistentTodoResponse = await agent.delete(`/todo/9999`).send();
+  // Expecting a 404 status code for attempting to delete a non-existent todo
+  expect(deleteNonExistentTodoResponse.status).toBe(404);
+});
 });
