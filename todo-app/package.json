@@ -5,14 +5,14 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "lint-staged": "lint-staged",
-  "precommit": "lint-staged"
+    "precommit": "lint-staged"
   },
   "lint-staged": {
-  "*.js": [
-    "eslint",
-    "prettier --write"
-  ]
-},
+    "*.js": [
+      "eslint",
+      "prettier --write"
+    ]
+  },
   "author": "kanchana <kanchu.it88@gmail.com>",
   "license": "ISC",
   "description": "",
