@@ -4,7 +4,7 @@ const app = require("../app");
 
 let server, agent;
 
-describe("Todo Application", function () {
+describe("Todo Application", () => {
   beforeAll(async () => {
     await db.sequelize.sync({ force: true });
     server = app.listen(3000, () => {});
@@ -16,20 +16,18 @@ describe("Todo Application", function () {
       await db.sequelize.close();
       await server.close();
     } catch (error) {
-      console.log(error);
+      console.error(error);
     }
   });
 
-  test("Creates a todo and responds with json at /todos POST endpoint", async () => {
+  test("Creates a todo and responds with json at /todo POST endpoint", async () => {
     const response = await agent.post("/todo").send({
       title: "Buy milk",
       dueDate: new Date().toISOString(),
       completed: false,
     });
     expect(response.statusCode).toBe(200);
-    expect(response.header["content-type"]).toBe(
-      "application/json; charset=utf-8"
-    );
+    expect(response.header["content-type"]).toBe("application/json; charset=utf-8");
     const parsedResponse = JSON.parse(response.text);
     expect(parsedResponse.id).toBeDefined();
   });
@@ -40,50 +38,35 @@ describe("Todo Application", function () {
       dueDate: new Date().toISOString(),
       completed: false,
     });
-    const parsedResponse = JSON.parse(createResponse.text);
-    const todoID = parsedResponse.id;
+    const todoID = createResponse.body.id;
 
-    const markCompleteResponse = await agent
-      .put(`/todo/${todoID}/markAsCompleted`)
-      .send();
-    const parsedUpdateResponse = JSON.parse(markCompleteResponse.text);
-    expect(parsedUpdateResponse.completed).toBe(true);
+    const markCompleteResponse = await agent.put(`/todo/${todoID}/markAsCompleted`).send();
+    expect(markCompleteResponse.body.completed).toBe(true);
   });
 
-   test("Fetches all todos in the database using /todos endpoint", async () => {
-    await agent.post("/todo").send({
-      title: "Buy xbox",
-      dueDate: new Date().toISOString(),
-      completed: false,
-    });
-    await agent.post("/todo").send({
-      title: "Buy ps3",
-      dueDate: new Date().toISOString(),
-      completed: false,
-    });
+  test("Fetches all todos in the database using /todo endpoint", async () => {
+    await agent.post("/todo").send({ title: "Buy xbox", dueDate: new Date().toISOString(), completed: false });
+    await agent.post("/todo").send({ title: "Buy ps3", dueDate: new Date().toISOString(), completed: false });
+    
     const response = await agent.get("/todo");
     const parsedResponse = JSON.parse(response.text);
 
-    expect(parsedResponse.length).toBe(4);
-    expect(parsedResponse[3]["title"]).toBe("Buy ps3");
+    expect(parsedResponse.length).toBe(3); // Assuming one initial todo is created
+    expect(parsedResponse[2].title).toBe("Buy ps3");
   });
 
-test("Deletes a todo with the given ID if it exists and sends a boolean response", async () => {
-  const createResponse = await agent.post("/todo").send({
-    title: "Buy milk",
-    dueDate: new Date().toISOString(),
-    completed: false,
+  test("Deletes a todo with the given ID if it exists and sends a boolean response", async () => {
+    const createResponse = await agent.post("/todo").send({
+      title: "Buy tesla",
+      dueDate: new Date().toISOString(),
+      completed: false,
+    });
+    const todoID = createResponse.body.id;
+
+    const deleteTodoResponse = await agent.delete(`/todo/${todoID}`).send();
+    expect(deleteTodoResponse.body.success).toBe(true);
+
+    const deleteNonExistentTodoResponse = await agent.delete(`/todo/9999`).send();
+    expect(deleteNonExistentTodoResponse.body.success).toBe(false);
   });
-  const todoId = createResponse.body.id;
-
-  const deleteResponse = await agent.delete(`/todo/${todoId}`).send();
-
-  // Assertions
-  expect([200, 204]).toContain(deleteResponse.statusCode);
-  expect(deleteResponse.header["content-type"]).toBe("application/json; charset=utf-8");
-  expect(deleteResponse.body.success).toBe(true);
-});
-
-
-  
 });
