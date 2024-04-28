@@ -4,22 +4,70 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>My To-Do Application</title>
+    <title>Todo Application</title>
     <link href="./css/styles.css" rel="stylesheet">
+    <style>
+        /* Add any additional CSS styles here */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th,
+        td {
+            padding: 8px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+
+        th {
+            background-color: #f2f2f2;
+        }
+
+        tr:nth-child(even) {
+            background-color: #f2f2f2;
+        }
+
+        tr:hover {
+            background-color: #ddd;
+        }
+    </style>
 </head>
 
 <body>
-    <%- include('header.ejs') %>
+    <!-- Header -->
+    <header>
+        <h1>This is my Todo Application</h1>
+    </header>
+
+    <!-- Main Content -->
+    <main>
         <table>
+            <tr>
+                <th>Title</th>
+                <th>Description</th>
+                <th>Status</th>
+            </tr>
             <% for (var i=0; i < allTodos.length; i++) { %>
                 <tr>
                     <td>
                         <%= allTodos[i].title %>
                     </td>
+                    <td>
+                        <%= allTodos[i].description %>
+                    </td>
+                    <td>
+                        <%= allTodos[i].status %>
+                    </td>
                 </tr>
                 <% } %>
         </table>
-        <% include('footer.ejs') %>
+    </main>
+
+    <!-- Footer -->
+    <footer>
+        <h2>Built with Node.js</h2>
+    </footer>
 </body>
 
 </html>
