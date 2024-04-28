@@ -16,7 +16,7 @@
   "production": {
     "username": "postgres",
     "password": "postgres",
-    "database": "todo_db_prod",
+    "database": "todo_db_prod1",
     "host": "127.0.0.1",
     "dialect": "postgres"
   }
