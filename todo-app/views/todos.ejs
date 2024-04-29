@@ -1,75 +1,148 @@
-<form class="grid grid-cols-4 gap-4 bg-gray-100 p-4 rounded-md shadow-md">
-  <div class="col-span-1 flex items-center text-gray-700 font-bold">Todo:</div>
+<!DOCTYPE html>
+<html lang="en">
 
-  <div class="col-span-2 flex">
-    <input type="text" placeholder="What's next?" name="title"
-      class="border border-gray-300 rounded text-gray-900 w-full p-2 text-sm" required />
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Todo Application</title>
+  <link href="./css/styles.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css"
+    integrity="sha384-...">
 
-    <input type="date" name="dueDate"
-      class="border border-gray-300 rounded text-gray-900 w-full p-2 text-sm leading-4" />
+  <style>
+    /* Add any additional CSS styles here */
+    table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    th,
+    td {
+      padding: 8px;
+      text-align: left;
+      border-bottom: 1px solid #ddd;
+    }
+
+    th {
+      background-color: #f2f2f2;
+    }
+
+    tr:nth-child(even) {
+      background-color: #f2f2f2;
+    }
+
+    tr:hover {
+      background-color: #ddd;
+    }
+
+    .task-item:hover {
+      background-color: #f0f4f8;
+      /* Change background color on hover */
+    }
+  </style>
+</head>
+
+<body>
+  <form class="grid grid-cols-4 gap-4 bg-gray-100 p-4 rounded-md shadow-md">
+    <div class="col-span-1 flex items-center text-gray-700 font-bold">Todo:</div>
+  
+    <div class="col-span-2 flex">
+      <input type="text" placeholder="What's next?" name="title"
+        class="border border-gray-300 rounded text-gray-900 w-full p-2 text-sm" required />
+  
+      <input type="date" name="dueDate"
+        class="border border-gray-300 rounded text-gray-900 w-full p-2 text-sm leading-4" />
+    </div>
+  
+    <div class="col-span-1">
+      <button type="submit" class="bg-green-600 text-white px-5 py-1.5 rounded font-medium mr-2 mb-2">
+        Add
+      </button>
+    </div>
+  </form>
+  <div class="col-span-4 mt-4 flex justify-between">
+    <h5 class="text-lg font-semibold mb-2">Overdue <span id="overdue-count">(Loading...)</span></h5>
+    <ul class="space-y-2" id="overdue-todos">
+      <!-- Todo items in Overdue section -->
+    </ul>
+  </div>
+  
+  <div class="col-span-4 mt-4 flex justify-between">
+    <h5 class="text-lg font-semibold mb-2">Due Today <span id="due-today-count">(Loading...)</span></h5>
+    <ul class="space-y-2" id="due-today-todos">
+      <!-- Todo items in Due Today section -->
+    </ul>
+  </div>
+  
+  <div class="col-span-4 mt-4 flex justify-between">
+    <h5 class="text-lg font-semibold mb-2">Due Later <span id="due-later-count">(Loading...)</span></h5>
+    <ul class="space-y-2" id="due-later-todos">
+      <!-- Todo items in Due Later section -->
+    </ul>
   </div>
 
-  <div class="col-span-1">
-    <button type="submit" class="bg-green-600 text-white px-5 py-1.5 rounded font-medium mr-2 mb-2">
-      Add
-    </button>
-  </div>
-</form>
-<div class="col-span-4 mt-4 flex justify-between">
-  <h5 class="text-lg font-semibold mb-2">Overdue</h5>
-  <ul class="space-y-2">
-    <li class="flex items-center task-item">
-      <input type="checkbox" id="todo1" name="todo1" class="mr-2 rounded">
-      <label for="todo1" class="text-gray-800">Task 1</label>
-      <a href="#" class="ml-auto">
-        <!-- Font Awesome Trash icon -->
-        <i class="fas fa-trash text-red-600 hover:text-red-700"></i>
-      </a>
-    </li>
 
+  <script>
+    // Function to fetch todos and update counts and list
+    async function fetchAndRenderTodos() {
+      try {
+        // Fetch todos from the backend
+        const response = await fetch('/todo');
+        const todos = await response.json();
 
-    <li class="flex items-center task-item">
-      <input type="checkbox" id="todo2" name="todo2" class="mr-2 rounded">
-      <label for="todo2" class="text-gray-800">Task 2</label>
-      <a href="#" class="ml-auto">
-        <!-- Font Awesome Trash icon -->
-        <i class="fas fa-trash text-red-600 hover:text-red-700"></i>
-      </a>
-    </li>
-    <li class="flex items-center task-item">
-      <input type="checkbox" id="todo3" name="todo3" class="mr-2 rounded">
-      <label for="todo3" class="text-gray-800">Task 3</label>
-      <a href="#" class="ml-auto">
-        <!-- Font Awesome Trash icon -->
-        <i class="fas fa-trash text-red-600 hover:text-red-700 trash-icon"></i>
-      </a>
+        // Update counts and lists
+        updateTodoCounts(todos);
+        renderTodoLists(todos);
+      } catch (error) {
+        console.error('Failed to fetch todos:', error);
+      }
+    }
 
-    </li>
-  </ul>
-  <h5>Due Today</h5>
-  <h5>Due Later</h5>
-</div>
-<!-- Main Content -->
-<main>
+    // Function to update todo counts
+    function updateTodoCounts(todos) {
+      const overdueCount = todos.filter(todo => todo.status === 'overdue').length;
+      const dueTodayCount = todos.filter(todo => todo.status === 'due today').length;
+      const dueLaterCount = todos.filter(todo => todo.status === 'due later').length;
 
-  <table>
-    <tr>
-      <th>Title</th>
-      <th>Description</th>
-      <th>Status</th>
-    </tr>
-    <% for (var i=0; i < allTodos.length; i++) { %>
-      <tr>
-        <td>
-          <%= allTodos[i].title %>
-        </td>
-        <td>
-          <%= allTodos[i].description %>
-        </td>
-        <td>
-          <%= allTodos[i].status %>
-        </td>
-      </tr>
-      <% } %>
-  </table>
-</main>
+      document.getElementById('overdue-count').textContent = `(${overdueCount})`;
+      document.getElementById('due-today-count').textContent = `(${dueTodayCount})`;
+      document.getElementById('due-later-count').textContent = `(${dueLaterCount})`;
+    }
+
+    // Function to render todo lists
+    function renderTodoLists(todos) {
+      const overdueList = document.getElementById('overdue-todos');
+      const dueTodayList = document.getElementById('due-today-todos');
+      const dueLaterList = document.getElementById('due-later-todos');
+
+      overdueList.innerHTML = '';
+      dueTodayList.innerHTML = '';
+      dueLaterList.innerHTML = '';
+
+      todos.forEach(todo => {
+        const listItem = document.createElement('li');
+        listItem.textContent = todo.title;
+
+        switch (todo.status) {
+          case 'overdue':
+            overdueList.appendChild(listItem);
+            break;
+          case 'due today':
+            dueTodayList.appendChild(listItem);
+            break;
+          case 'due later':
+            dueLaterList.appendChild(listItem);
+            break;
+          default:
+            break;
+        }
+      });
+    }
+
+    // Fetch and render todos when the page loads
+    window.onload = fetchAndRenderTodos;
+  </script>
+</body>
+
+</html>
