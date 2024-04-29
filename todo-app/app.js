@@ -4,85 +4,88 @@ const { Todo } = require("./models");
 const bodyParser = require("body-parser");
 const path = require("path");
 
-// Middleware
 app.use(bodyParser.json());
-app.set("view engine", "ejs");
+app.use(express.urlencoded({ extended: false }));
 app.use(express.static(path.join(__dirname, "public")));
 
+app.set("view engine", "ejs");
 
-// Routes
 app.get("/", async (request, response) => {
   try {
+    const overdue = await Todo.overdue();
+    const dueToday = await Todo.dueToday();
+    const dueLater = await Todo.dueLater();
     const allTodos = await Todo.getTodos();
+    
     if (request.accepts("html")) {
-      response.render('index', { allTodos });
+      response.render("index", {
+        title: "Todo application",
+        overdue,
+        dueToday,
+        dueLater,
+        allTodos,
+      });
     } else {
-      response.json({ allTodos });
+      response.json({ overdue, dueLater, dueToday });
     }
   } catch (error) {
-    console.error(error);
-    response.status(500).json({ error: "Failed to fetch todos" });
+    console.log(error);
+    return response.status(500).json({ error: "Internal Server Error" });
   }
 });
 
-app.get("/todo", async (request, response) => {
+app.get("/todo", async function (request, response) {
+  console.log("Processing list of all Todos ...");
   try {
     const todos = await Todo.findAll();
-    response.json(todos);
+    return response.json(todos);
   } catch (error) {
-    console.error(error);
-    response.status(500).json({ error: "Failed to fetch todos" });
+    console.log(error);
+    return response.status(422).json(error);
   }
 });
 
-app.get("/todo/:id", async (request, response) => {
+app.get("/todo/:id", async function (request, response) {
   try {
     const todo = await Todo.findByPk(request.params.id);
-    if (!todo) {
-      return response.status(404).json({ error: "Todo not found" });
-    }
-    response.json(todo);
+    return response.json(todo);
   } catch (error) {
-    console.error(error);
-    response.status(500).json({ error: "Failed to fetch todo" });
+    console.log(error);
+    return response.status(422).json(error);
   }
 });
 
-app.post("/todo", async (request, response) => {
+app.post("/todo", async function (request, response) {
   try {
-    const todo = await Todo.create(request.body);
-    response.json(todo);
+    await Todo.addTodo({
+      title: request.body.title,
+      dueDate: request.body.dueDate,
+    });
+    return response.redirect("/");
   } catch (error) {
-    console.error(error);
-    response.status(500).json({ error: "Failed to create todo" });
+    console.log(error);
+    return response.status(422).json(error);
   }
 });
 
-app.put("/todo/:id/markAsCompleted", async (request, response) => {
+app.put("/todo/:id/markAsCompleted", async function (request, response) {
+  const todo = await Todo.findByPk(request.params.id);
   try {
-    const todo = await Todo.findByPk(request.params.id);
-    if (!todo) {
-      return response.status(404).json({ error: "Todo not found" });
-    }
-    const updatedTodo = await todo.update({ completed: true });
-    response.json(updatedTodo);
+    const updatedTodo = await todo.markAsCompleted();
+    return response.json(updatedTodo);
   } catch (error) {
-    console.error(error);
-    response.status(500).json({ error: "Failed to mark todo as completed" });
+    console.log(error);
+    return response.status(422).json(error);
   }
 });
 
-app.delete("/todo/:id", async (request, response) => {
+app.delete("/todo/:id", async function (request, response) {
+  console.log("We have to delete a Todo with ID: ", request.params.id);
   try {
-    const todo = await Todo.findByPk(request.params.id);
-    if (!todo) {
-      return response.status(404).json({ error: "Todo not found" });
-    }
-    await todo.destroy();
-    response.json({ success: true });
+    await Todo.remove(request.params.id);
+    return response.json({ success: true });
   } catch (error) {
-    console.error(error);
-    response.status(500).json({ error: "Failed to delete todo" });
+    return response.status(422).json(error);
   }
 });
 

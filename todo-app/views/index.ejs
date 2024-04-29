@@ -1,59 +1,72 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" dir="ltr">
 
 <head>
-    <meta charset="UTF-8">
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Todo Application</title>
-    <link href="./css/styles.css" rel="stylesheet">
-    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css"
-        integrity="sha384-...">
-
-    <style>
-        /* Add any additional CSS styles here */
-        table {
-            width: 100%;
-            border-collapse: collapse;
+    <link rel="stylesheet" href="./css/styles.css">
+    <title>To-Do App</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        function updateTodo(id) {
+            fetch(`/todo/${id}/markAsCompleted`, {
+                method: "put",
+                headers: { "Content-Type": "application/json" },
+            })
+                .then((res) => {
+                    if (res.ok) {
+                        window.location.reload();
+                    }
+                })
+                .catch((err) => console.error(err));
         }
-
-        th,
-        td {
-            padding: 8px;
-            text-align: left;
-            border-bottom: 1px solid #ddd;
+        function deleteTodo(id) {
+            fetch(`/todo/${id}`, {
+                method: "delete",
+                headers: { "Content-Type": "application/json" },
+            })
+                .then((res) => {
+                    if (res.ok) {
+                        window.location.reload();
+                    }
+                })
+                .catch((err) => {
+                    console.error(err)
+                })
         }
-
-        th {
-            background-color: #f2f2f2;
-        }
-
-        tr:nth-child(even) {
-            background-color: #f2f2f2;
-        }
-
-        tr:hover {
-            background-color: #ddd;
-        }
-        .task-item:hover {
-        background-color: #f0f4f8; /* Change background color on hover */
-    }
-    </style>
+    </script>
 </head>
 
 <body>
-    <!-- Header -->
     <div class="grid grid-cols-6">
         <div class="col-start-3 col-span-2">
             <%- include('header.ejs') %>
-            <%- include('todos.ejs') %>  
+                <form action="/todo" method="post">
+                    <div class="flex gap-2 py-4">
+                        <div class="flex-auto">
+                            <input type="text" name="title" placeholder="What's next?"
+                                class="border border-gray-300 text-gray-900 w-full rounded p-2 text-sm leading-5"
+                                required />
+                        </div>
+                        <div class="flex-auto">
+                            <input type="date" name="dueDate"
+                                class="border border-gray-300 text-gray-900 w-full rounded p-2 text-sm leading-4" />
+                        </div>
+                        <div class="flex-none">
+                            <button type="submit"
+                                class="bg-green-600 text-white px-5 py-2 rounded font-medium mr-2 mb-2 leading-5">Add</button>
+                        </div>
+                    </div>
+                </form>
+                <div>
+                    <%- include('todos.ejs', { title: "Overdue" , data: overdue }) %>
+                        <%- include('todos.ejs', { title: "Due Today" , data: dueToday }) %>
+                            <%- include('todos.ejs', { title: "Due Later" , data: dueLater }) %>
+                </div>
         </div>
-    </div>   
-
-    <!-- Footer -->
-    <footer>
-        <%- include('footer.ejs') %>
-    </footer>
+    </div>
+    <%- include('footer.ejs') %>
 </body>
 
 </html>
