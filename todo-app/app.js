@@ -9,6 +9,7 @@ app.use(bodyParser.json());
 app.set("view engine", "ejs");
 app.use(express.static(path.join(__dirname, "public")));
 
+
 // Routes
 app.get("/", async (request, response) => {
   try {

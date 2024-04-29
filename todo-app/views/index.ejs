@@ -6,6 +6,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Todo Application</title>
     <link href="./css/styles.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css"
+        integrity="sha384-...">
+
     <style>
         /* Add any additional CSS styles here */
         table {
@@ -31,43 +35,66 @@
         tr:hover {
             background-color: #ddd;
         }
+        .task-item:hover {
+        background-color: #f0f4f8; /* Change background color on hover */
+    }
     </style>
 </head>
 
 <body>
     <!-- Header -->
-    <header>
-        <%- include('header.ejs') %>
-    </header>
+    <div class="grid grid-cols-6">
+        <div class="col-start-3 col-span-2">
+            <%- include('header.ejs') %>
+            <%- include('todos.ejs') %>
+    
 
-    <!-- Main Content -->
-    <main>
-        <table>
-            <tr>
-                <th>Title</th>
-                <th>Description</th>
-                <th>Status</th>
-            </tr>
-            <% for (var i=0; i < allTodos.length; i++) { %>
-                <tr>
-                    <td>
-                        <%= allTodos[i].title %>
-                    </td>
-                    <td>
-                        <%= allTodos[i].description %>
-                    </td>
-                    <td>
-                        <%= allTodos[i].status %>
-                    </td>
-                </tr>
-                <% } %>
-        </table>
-    </main>
+
+        </div>
+    </div>
+
+
+    
 
     <!-- Footer -->
     <footer>
         <%- include('footer.ejs') %>
     </footer>
 </body>
+<script>
+    // Fetch To-do items from the backend
+    fetch('/todo')
+        .then(response => response.json())
+        .then(data => {
+            // Render To-do items in respective sections
+            renderTodoItems(data, 'Overdue');
+            renderTodoItems(data, 'Due Today');
+            renderTodoItems(data, 'Due Later');
 
+            // Display item counts in each section
+            displayItemCount(data.overdue.length, 'Overdue');
+            displayItemCount(data.dueToday.length, 'Due Today');
+            displayItemCount(data.dueLater.length, 'Due Later');
+        })
+        .catch(error => console.error('Error fetching To-do items:', error));
+
+    // Function to render To-do items in a section
+    function renderTodoItems(items, section) {
+        const listElement = document.querySelector(`#${section.replace(' ', '-').toLowerCase()}-list`);
+        listElement.innerHTML = ''; // Clear previous items
+
+        items.forEach(item => {
+            const listItem = document.createElement('li');
+            listItem.textContent = item.title;
+            listElement.appendChild(listItem);
+            // Add logic to render other details of the item (description, due date, etc.)
+        });
+    }
+
+    // Function to display item count in a section
+    function displayItemCount(count, section) {
+        const countElement = document.querySelector(`#${section.replace(' ', '-').toLowerCase()}-count`);
+        countElement.textContent = ` (${count})`;
+    }
+</script>
 </html>
