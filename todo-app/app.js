@@ -39,7 +39,7 @@ app.get("/", async (request, response) => {
       overdue,
       dueToday,
       dueLater,
-      completed, // Pass completed todos to the template
+      completed, // Pass the completed variable
       csrfToken: request.csrfToken(),
     });
   } else {
@@ -51,7 +51,6 @@ app.get("/", async (request, response) => {
     });
   }
 });
-
 
 
 app.get("/todo/:id", async (req, res) => {
