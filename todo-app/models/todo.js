@@ -19,6 +19,8 @@ module.exports = (sequelize, DataTypes) => {
       return this.findAll();
     }
 
+    
+
     static async overdue() {
       return this.findAll({
         where: {
@@ -30,9 +32,11 @@ module.exports = (sequelize, DataTypes) => {
       });
     }
 
-    // deleteTodo() {
-    //   return this.removetask(id);
-    // }
+    static async completed() {
+    return await Todo.findAll({
+      where: { completed: true }
+    });
+  }
 
     static async dueToday() {
       return this.findAll({
@@ -69,16 +73,26 @@ module.exports = (sequelize, DataTypes) => {
     }
   }
 
-  Todo.init(
-    {
-      title: DataTypes.STRING,
-      dueDate: DataTypes.DATEONLY,
-      completed: DataTypes.BOOLEAN,
-    },
-    {
-      sequelize,
-      modelName: "Todo",
-    },
-  );
+  Todo.init({
+  id: {
+    type: DataTypes.INTEGER,
+    primaryKey: true,
+    autoIncrement: true
+  },
+  title: {
+    type: DataTypes.STRING,
+    allowNull: false
+  },
+  dueDate: {
+    type: DataTypes.DATE
+  },
+  completed: {
+    type: DataTypes.BOOLEAN,
+    defaultValue: false
+  }
+}, {
+  sequelize,
+  modelName: 'Todo'
+});
   return Todo;
 };
