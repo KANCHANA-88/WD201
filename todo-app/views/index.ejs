@@ -4,11 +4,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TO-DO Manager</title>
+    <title>Todo Application</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="csrf-token" content="<%= csrfToken %>" />
-    
-    <title>Todo Application</title>
 </head>
 
 <body>
@@ -38,65 +36,71 @@
                 <%= overdue.length %>
             </span> <!-- Count of overdue todos -->
             <%- include('todos.ejs', { title: "Overdue" , data: overdue }) %>
-        
-                <h2>Due Today</h2>
-                <span id="due-today-count">
-                    <%= dueToday.length %>
-                </span> <!-- Count of due today todos -->
-                <%- include('todos.ejs', { title: "Due Today" , data: dueToday }) %>
-        
-                    <h2>Due Later</h2>
-                    <span id="due-later-count">
-                        <%= dueLater.length %>
-                    </span> <!-- Count of due later todos -->
-                    <%- include('todos.ejs', { title: "Due Later" , data: dueLater }) %>
-        
-                        <h2>Completed</h2>
-                        <span id="completed-count">
-                            <%= completed.length %>
-                        </span> <!-- Count of completed todos -->
-                        <%- include('todos.ejs', { title: "Completed" , data: completed }) %>
+        </div>
+
+        <div>
+            <h2>Due Today</h2>
+            <span id="due-today-count">
+                <%= dueToday.length %>
+            </span> <!-- Count of due today todos -->
+            <%- include('todos.ejs', { title: "Due Today" , data: dueToday }) %>
+        </div>
+
+        <div>
+            <h2>Due Later</h2>
+            <span id="due-later-count">
+                <%= dueLater.length %>
+            </span> <!-- Count of due later todos -->
+            <%- include('todos.ejs', { title: "Due Later" , data: dueLater }) %>
+        </div>
+
+        <div>
+            <h2>Completed</h2>
+            <span id="completed-count">
+                <%= completed.length %>
+            </span> <!-- Count of completed todos -->
+            <%- include('todos.ejs', { title: "Completed" , data: completed }) %>
         </div>
     </div>
 
     <script>
         var token = document
-                .querySelector('meta[name="csrf-token"]')
-                .getAttribute("content");
+            .querySelector('meta[name="csrf-token"]')
+            .getAttribute("content");
 
-            function updateTodo(id) {
-                fetch(`/todo/${id}/markAsCompleted`, {
-                    method: "put",
-                    headers: {
-                        "Content-Type": "application/json",
-                    },
-                    body: JSON.stringify({
-                        _csrf: token,
-                    }),
+        function updateTodo(id) {
+            fetch(`/todo/${id}/markAsCompleted`, {
+                method: "put",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({
+                    _csrf: token,
+                }),
+            })
+                .then((res) => {
+                    window.location.reload();
                 })
-                    .then((res) => {
-                        window.location.reload();
-                    })
-                    .catch((err) => console.error(err));
-            }
+                .catch((err) => console.error(err));
+        }
 
-            function deleteTodo(id) {
-                console.log(id);
+        function deleteTodo(id) {
+            console.log(id);
 
-                fetch(`/todo/${id}`, {
-                    method: "delete",
-                    headers: {
-                        "Content-Type": "application/json",
-                    },
-                    body: JSON.stringify({
-                        _csrf: token,
-                    }),
+            fetch(`/todo/${id}`, {
+                method: "delete",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({
+                    _csrf: token,
+                }),
+            })
+                .then((res) => {
+                    window.location.reload();
                 })
-                    .then((res) => {
-                        window.location.reload();
-                    })
-                    .catch((err) => console.error(err));
-            }
+                .catch((err) => console.error(err));
+        }
     </script>
 </body>
 

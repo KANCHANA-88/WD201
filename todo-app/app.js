@@ -1,4 +1,3 @@
-// app.js
 const express = require("express");
 const csurf = require("csurf");
 const cookieParser = require("cookie-parser");
@@ -29,72 +28,72 @@ app.set("view engine", "ejs");
 
 // Routes
 app.get("/", async (request, response) => {
-  const overdue = await Todo.overdue();
-  const dueToday = await Todo.dueToday();
-  const dueLater = await Todo.dueLater();
-  const completed = await Todo.completed(); // Fetch completed todos
-  if (request.accepts("html")) {
+  try {
+    const overdue = await Todo.overdue();
+    const dueToday = await Todo.dueToday();
+    const dueLater = await Todo.dueLater();
+    const completed = await Todo.completed();
+
+    // Render the index view with data
     response.render("index", {
-      title: "Todo application",
-      overdue,
-      dueToday,
-      dueLater,
-      completed, // Pass the completed variable
-      csrfToken: request.csrfToken(),
-    });
-  } else {
-    response.json({
+      title: "Todo Application",
       overdue,
       dueToday,
       dueLater,
       completed,
+      csrfToken: request.csrfToken(),
     });
-  }
-});
-
-
-app.get("/todo/:id", async (req, res) => {
-  try {
-    const todo = await Todo.findByPk(req.params.id);
-    return res.json(todo);
   } catch (error) {
-    console.log(error);
-    return res.status(422).json(error);
+    console.error("Error:", error);
+    response.status(500).send("Internal Server Error");
   }
 });
 
 app.post("/todo", async (req, res) => {
   try {
-    // Your todo creation logic
+    // Check if the due date is empty
+    if (!req.body.dueDate) {
+      return res.status(400).json({ error: "Due date cannot be empty" });
+    }
+    // Create a new todo item
     await Todo.addTodo({
       title: req.body.title,
       dueDate: req.body.dueDate,
     });
+    // Redirect to the homepage after creating the todo
     return res.redirect("/");
   } catch (error) {
-    console.log(error);
-    return res.status(422).json(error);
+    console.error("Error:", error);
+    return res.status(500).json({ error: "Internal Server Error" });
   }
 });
 
 app.put("/todo/:id/markAsCompleted", async (req, res) => {
-  const todo = await Todo.findByPk(req.params.id);
   try {
+    // Find the todo item by ID
+    const todo = await Todo.findByPk(req.params.id);
+
+    // Mark the todo item as completed
     const updatedTodo = await todo.markAsCompleted();
+
+    // Send the updated todo item as JSON response
     return res.json(updatedTodo);
   } catch (error) {
-    console.log(error);
-    return res.status(422).json(error);
+    console.error("Error:", error);
+    return res.status(500).json({ error: "Internal Server Error" });
   }
 });
 
 app.delete("/todo/:id", async (req, res) => {
-  console.log("We have to delete a Todo with ID: ", req.params.id);
   try {
+    // Find the todo item by ID and remove it
     await Todo.remove(req.params.id);
+
+    // Send success message as JSON response
     return res.json({ success: true });
   } catch (error) {
-    return res.status(422).json(error);
+    console.error("Error:", error);
+    return res.status(500).json({ error: "Internal Server Error" });
   }
 });
 
