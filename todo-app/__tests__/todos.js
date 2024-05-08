@@ -108,9 +108,27 @@ describe("Todo Application", () => {
     expect(markCompleteResponse.body.completed).toBe(true);
   });
 
+  // Test cases for the new conditions
+  test("ensure each section contains one element with the given IDs", async () => {
+    // Implement this test case
+  });
+
+  test("should not create a todo item with empty dueDate", async () => {
+    // Implement this test case
+  });
+
+  test("should mark sample overdue item as completed", async () => {
+    // Implement this test case
+  });
+
+  test("should toggle a completed item to incomplete", async () => {
+    // Implement this test case
+  });
+
   // Add tests for toggling completion status and deleting a todo item here
 
 });
+
 test("toggle completion status of a todo item", async () => {
   // Create a new todo item
   const res = await agent.get("/");
