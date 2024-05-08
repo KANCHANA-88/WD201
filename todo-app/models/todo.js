@@ -1,12 +1,8 @@
 "use strict";
 const { Model, Sequelize } = require("sequelize");
+
 module.exports = (sequelize, DataTypes) => {
   class Todo extends Model {
-    /**
-     * Helper method for defining associations.
-     * This method is not a part of Sequelize lifecycle.
-     * The `models/index` file will call this method automatically.
-     */
     static associate(models) {
       // define association here
     }
@@ -18,8 +14,6 @@ module.exports = (sequelize, DataTypes) => {
     static getTodos() {
       return this.findAll();
     }
-
-    
 
     static async overdue() {
       return this.findAll({
@@ -33,27 +27,31 @@ module.exports = (sequelize, DataTypes) => {
     }
 
     static async completed() {
-    return await Todo.findAll({
-      where: { completed: true }
-    });
-  }
-
-    static async dueToday() {
       return this.findAll({
         where: {
-          dueDate: {
-            [Sequelize.Op.eq]: new Date(),
-          },
+          completed: true,
+        },
+      });
+    }
+
+    static async dueToday() {
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      return this.findAll({
+        where: {
+          dueDate: today,
           completed: false,
         },
       });
     }
 
     static async dueLater() {
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
       return this.findAll({
         where: {
           dueDate: {
-            [Sequelize.Op.gt]: new Date(),
+            [Sequelize.Op.gt]: today,
           },
           completed: false,
         },
@@ -71,28 +69,36 @@ module.exports = (sequelize, DataTypes) => {
     markAsCompleted() {
       return this.update({ completed: true });
     }
+
+    toggleCompletion() {
+      return this.update({ completed: !this.completed });
+    }
   }
 
-  Todo.init({
-  id: {
-    type: DataTypes.INTEGER,
-    primaryKey: true,
-    autoIncrement: true
-  },
-  title: {
-    type: DataTypes.STRING,
-    allowNull: false
-  },
-  dueDate: {
-    type: DataTypes.DATE
-  },
-  completed: {
-    type: DataTypes.BOOLEAN,
-    defaultValue: false
-  }
-}, {
-  sequelize,
-  modelName: 'Todo'
-});
+  Todo.init(
+    {
+      id: {
+        type: DataTypes.INTEGER,
+        primaryKey: true,
+        autoIncrement: true,
+      },
+      title: {
+        type: DataTypes.STRING,
+        allowNull: false,
+      },
+      dueDate: {
+        type: DataTypes.DATE,
+      },
+      completed: {
+        type: DataTypes.BOOLEAN,
+        defaultValue: false,
+      },
+    },
+    {
+      sequelize,
+      modelName: "Todo",
+    }
+  );
+
   return Todo;
 };

@@ -51,15 +51,22 @@ app.get("/", async (request, response) => {
 
 app.post("/todo", async (req, res) => {
   try {
+    // Check if the title is empty
+    if (!req.body.title) {
+      return res.status(400).json({ error: "Title cannot be empty" });
+    }
+
     // Check if the due date is empty
     if (!req.body.dueDate) {
       return res.status(400).json({ error: "Due date cannot be empty" });
     }
+
     // Create a new todo item
     await Todo.addTodo({
       title: req.body.title,
       dueDate: req.body.dueDate,
     });
+
     // Redirect to the homepage after creating the todo
     return res.redirect("/");
   } catch (error) {

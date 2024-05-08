@@ -32,7 +32,7 @@
     <div>
         <div>
             <h2>Overdue</h2>
-            <span id="overdue-count">
+            <span id="count-overdue">
                 <%= overdue.length %>
             </span> <!-- Count of overdue todos -->
             <%- include('todos.ejs', { title: "Overdue" , data: overdue }) %>
@@ -40,7 +40,7 @@
 
         <div>
             <h2>Due Today</h2>
-            <span id="due-today-count">
+            <span id="count-due-today">
                 <%= dueToday.length %>
             </span> <!-- Count of due today todos -->
             <%- include('todos.ejs', { title: "Due Today" , data: dueToday }) %>
@@ -48,7 +48,7 @@
 
         <div>
             <h2>Due Later</h2>
-            <span id="due-later-count">
+            <span id="count-due-later">
                 <%= dueLater.length %>
             </span> <!-- Count of due later todos -->
             <%- include('todos.ejs', { title: "Due Later" , data: dueLater }) %>
