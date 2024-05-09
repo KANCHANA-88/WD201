@@ -8,7 +8,11 @@ module.exports = (sequelize, DataTypes) => {
     }
 
     static addTodo({ title, dueDate }) {
-      return this.create({ title: title, dueDate: dueDate, completed: false });
+      if (!dueDate) {
+        throw new Error('Due date is required.');
+      }
+
+      return this.create({ title, dueDate, completed: false });
     }
 
     static getTodos() {
@@ -72,6 +76,21 @@ module.exports = (sequelize, DataTypes) => {
 
     toggleCompletion() {
       return this.update({ completed: !this.completed });
+    }
+
+    static async markSampleOverdueItemAsCompleted() {
+      const sampleOverdueItem = await this.findOne({
+        where: {
+          dueDate: {
+            [Sequelize.Op.lt]: new Date(),
+          },
+          completed: false,
+        },
+      });
+
+      if (sampleOverdueItem) {
+        await sampleOverdueItem.update({ completed: true });
+      }
     }
   }
 
