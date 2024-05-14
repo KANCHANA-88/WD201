@@ -51,23 +51,19 @@ app.get("/", async (request, response) => {
 
 app.post("/todo", async (req, res) => {
   try {
-    // Check if the title is empty
-    if (!req.body.title) {
+    if (!req.body.title.trim()) {
       return res.status(400).json({ error: "Title cannot be empty" });
     }
 
-    // Check if the due date is empty
     if (!req.body.dueDate) {
       return res.status(400).json({ error: "Due date cannot be empty" });
     }
 
-    // Create a new todo item
     await Todo.addTodo({
       title: req.body.title,
       dueDate: req.body.dueDate,
     });
 
-    // Redirect to the homepage after creating the todo
     return res.redirect("/");
   } catch (error) {
     console.error("Error:", error);
@@ -77,13 +73,8 @@ app.post("/todo", async (req, res) => {
 
 app.put("/todo/:id/markAsCompleted", async (req, res) => {
   try {
-    // Find the todo item by ID
     const todo = await Todo.findByPk(req.params.id);
-
-    // Mark the todo item as completed
     const updatedTodo = await todo.markAsCompleted();
-
-    // Send the updated todo item as JSON response
     return res.json(updatedTodo);
   } catch (error) {
     console.error("Error:", error);
@@ -93,10 +84,7 @@ app.put("/todo/:id/markAsCompleted", async (req, res) => {
 
 app.delete("/todo/:id", async (req, res) => {
   try {
-    // Find the todo item by ID and remove it
     await Todo.remove(req.params.id);
-
-    // Send success message as JSON response
     return res.json({ success: true });
   } catch (error) {
     console.error("Error:", error);

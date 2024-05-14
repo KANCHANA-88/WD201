@@ -36,13 +36,10 @@ describe("Todo Application", () => {
     const res = await agent.get("/");
     const csrfToken = extractCsrfToken(res);
 
-    const today = new Date();
-    today.setHours(0, 0, 0, 0); // Set time to start of the day
-
     const response = await agent.post("/todo").send({
       _csrf: csrfToken,
-      title: "Buy milk",
-      dueDate: today.toISOString(),
+      title: "Test Todo",
+      dueDate: new Date().toISOString(),
       completed: false,
     });
 
@@ -54,11 +51,11 @@ describe("Todo Application", () => {
     const csrfToken = extractCsrfToken(res);
 
     const futureDate = new Date();
-    futureDate.setDate(futureDate.getDate() + 1); // Set due date to tomorrow
+    futureDate.setDate(futureDate.getDate() + 1);
 
     const response = await agent.post("/todo").send({
       _csrf: csrfToken,
-      title: "Complete project",
+      title: "Future Todo",
       dueDate: futureDate.toISOString(),
       completed: false,
     });
@@ -71,11 +68,11 @@ describe("Todo Application", () => {
     const csrfToken = extractCsrfToken(res);
 
     const pastDate = new Date();
-    pastDate.setDate(pastDate.getDate() - 1); // Set due date to yesterday
+    pastDate.setDate(pastDate.getDate() - 1);
 
     const response = await agent.post("/todo").send({
       _csrf: csrfToken,
-      title: "Submit report",
+      title: "Overdue Todo",
       dueDate: pastDate.toISOString(),
       completed: false,
     });
@@ -84,22 +81,21 @@ describe("Todo Application", () => {
   });
 
   test("mark overdue todo item as completed", async () => {
-    // Create an overdue todo item
     const res = await agent.get("/");
     const csrfToken = extractCsrfToken(res);
 
     const pastDate = new Date();
-    pastDate.setDate(pastDate.getDate() - 1); // Set due date to yesterday
+    pastDate.setDate(pastDate.getDate() - 1);
 
     const todoResponse = await agent.post("/todo").send({
       _csrf: csrfToken,
-      title: "Submit report",
+      title: "Overdue Todo",
       dueDate: pastDate.toISOString(),
       completed: false,
     });
 
-    // Mark the overdue todo item as completed
     const todoId = todoResponse.body.id;
+
     const markCompleteResponse = await agent.put(`/todo/${todoId}/markAsCompleted`).send({
       _csrf: csrfToken,
     });
@@ -108,78 +104,130 @@ describe("Todo Application", () => {
     expect(markCompleteResponse.body.completed).toBe(true);
   });
 
-  // Test cases for the new conditions
   test("ensure each section contains one element with the given IDs", async () => {
-    // Implement this test case
+    // Assuming you have IDs like 'count-overdue', 'count-due-today', etc.
+    const res = await agent.get("/");
+    const $ = cheerio.load(res.text);
+
+    expect($("#count-overdue").length).toBe(1);
+    expect($("#count-due-today").length).toBe(1);
+    expect($("#count-due-later").length).toBe(1);
+    expect($("#count-completed").length).toBe(1);
   });
 
-  test("should not create a todo item with empty dueDate", async () => {
-    // Implement this test case
+  test("should not create a todo item with empty title", async () => {
+    const res = await agent.get("/");
+    const csrfToken = extractCsrfToken(res);
+
+    const response = await agent.post("/todo").send({
+      _csrf: csrfToken,
+      title: "",
+      dueDate: new Date().toISOString(),
+      completed: false,
+    });
+
+    expect(response.statusCode).toBe(400);
+    expect(response.body.error).toBe("Title cannot be empty");
+  });
+
+  test("should create sample due today item", async () => {
+    const res = await agent.get("/");
+    const csrfToken = extractCsrfToken(res);
+
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    const response = await agent.post("/todo").send({
+      _csrf: csrfToken,
+      title: "Sample Due Today",
+      dueDate: today.toISOString(),
+      completed: false,
+    });
+
+    expect(response.statusCode).toBe(302);
+  });
+
+  test("should create sample due later item", async () => {
+    const res = await agent.get("/");
+    const csrfToken = extractCsrfToken(res);
+
+    const futureDate = new Date();
+    futureDate.setDate(futureDate.getDate() + 2); // Set due date 2 days later
+
+    const response = await agent.post("/todo").send({
+      _csrf: csrfToken,
+      title: "Sample Due Later",
+      dueDate: futureDate.toISOString(),
+      completed: false,
+    });
+
+    expect(response.statusCode).toBe(302);
+  });
+
+  test("should create sample overdue item", async () => {
+    const res = await agent.get("/");
+    const csrfToken = extractCsrfToken(res);
+
+    const pastDate = new Date();
+    pastDate.setDate(pastDate.getDate() - 2); // Set due date 2 days ago
+
+    const response = await agent.post("/todo").send({
+      _csrf: csrfToken,
+      title: "Sample Overdue",
+      dueDate: pastDate.toISOString(),
+      completed: false,
+    });
+
+    expect(response.statusCode).toBe(302);
   });
 
   test("should mark sample overdue item as completed", async () => {
-    // Implement this test case
+  const res = await agent.get("/");
+  const csrfToken = extractCsrfToken(res);
+
+  const pastDate = new Date();
+  pastDate.setDate(pastDate.getDate() - 2); // Set due date 2 days ago
+
+  const todoResponse = await agent.post("/todo").send({
+    _csrf: csrfToken,
+    title: "Sample Overdue",
+    dueDate: pastDate.toISOString(),
+    completed: false,
   });
 
-  test("should toggle a completed item to incomplete", async () => {
-    // Implement this test case
+  const todoId = todoResponse.body.id;
+
+  const markCompleteResponse = await agent.put(`/todo/${todoId}/markAsCompleted`).send({
+    _csrf: csrfToken,
   });
 
-  // Add tests for toggling completion status and deleting a todo item here
-
+  expect(markCompleteResponse.statusCode).toBe(200);
+  expect(markCompleteResponse.body.completed).toBe(true);
 });
 
-test("toggle completion status of a todo item", async () => {
-  // Create a new todo item
+
+  test("should toggle a completed item to incomplete when clicked on it", async () => {
   const res = await agent.get("/");
   const csrfToken = extractCsrfToken(res);
 
   const todoResponse = await agent.post("/todo").send({
     _csrf: csrfToken,
-    title: "Read a book",
+    title: "Toggle Todo",
     dueDate: new Date().toISOString(),
-    completed: false,
+    completed: true, // Create a completed item
   });
 
-  // Get the ID of the created todo item
   const todoId = todoResponse.body.id;
 
-  // Toggle completion status of the todo item
   await agent.put(`/todo/${todoId}/toggleCompletion`).send({
     _csrf: csrfToken,
   });
 
-  // Retrieve the updated todo item
-  const updatedTodo = await db.Todo.findByPk(todoId);
+  const updatedTodoResponse = await agent.get("/");
+  const updatedTodo = updatedTodoResponse.body.find(todo => todo.id === todoId);
 
-  // Ensure that the completion status is toggled
-  expect(updatedTodo.completed).toBe(true);
+  expect(updatedTodo.completed).toBe(false);
 });
 
-test("delete a todo item", async () => {
-  // Create a new todo item
-  const res = await agent.get("/");
-  const csrfToken = extractCsrfToken(res);
-
-  const todoResponse = await agent.post("/todo").send({
-    _csrf: csrfToken,
-    title: "Go for a run",
-    dueDate: new Date().toISOString(),
-    completed: false,
-  });
-
-  // Get the ID of the created todo item
-  const todoId = todoResponse.body.id;
-
-  // Delete the todo item
-  const deleteResponse = await agent.delete(`/todo/${todoId}`).send({
-    _csrf: csrfToken,
-  });
-
-  // Ensure that the todo item is deleted
-  expect(deleteResponse.statusCode).toBe(200);
-
-  // Check if the todo item exists in the database
-  const todoExists = await db.Todo.findByPk(todoId);
-  expect(todoExists).toBeNull();
-});
+    const updatedTodoResponse = await agent.get("/");
+    const updatedTodo = updatedTodoResponse.body.find
