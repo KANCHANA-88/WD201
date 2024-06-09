@@ -1,104 +1,123 @@
 "use strict";
-const { Model, Op } = require("sequelize");
+const { Model, Sequelize } = require("sequelize");
+
 module.exports = (sequelize, DataTypes) => {
-  class Todos extends Model {
-    /**
-     * Helper method for defining associations.
-     * This method is not a part of Sequelize lifecycle.
-     * The `models/index` file will call this method automatically.
-     */
+  class Todo extends Model {
+    static associate(models) {
+      // define association here
+    }
+
+    static addTodo({ title, dueDate }) {
+      if (!dueDate) {
+        throw new Error('Due date is required.');
+      }
+
+      return this.create({ title, dueDate, completed: false });
+    }
+
+    static getTodos() {
+      return this.findAll();
+    }
 
     static async overdue() {
-      const overdueTodos = await Todos.findAll({
+      return this.findAll({
         where: {
-          dueDate: { [Op.lt]: new Date() },          
+          dueDate: {
+            [Sequelize.Op.lt]: new Date(),
+          },
           completed: false,
         },
       });
+    }
 
-      return overdueTodos;
+    static async completed() {
+      return this.findAll({
+        where: {
+          completed: true,
+        },
+      });
     }
 
     static async dueToday() {
-      const dueTodayTodos = await Todos.findAll({
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      return this.findAll({
         where: {
-          dueDate: { [Op.eq]: new Date() },         
+          dueDate: today,
           completed: false,
         },
       });
-
-      return dueTodayTodos;
     }
 
     static async dueLater() {
-      const dueLaterTodos = await Todos.findAll({
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      return this.findAll({
         where: {
-          dueDate: { [Op.gt]: new Date() },          
+          dueDate: {
+            [Sequelize.Op.gt]: today,
+          },
+          completed: false,
+        },
+      });
+    }
+
+    static async remove(id) {
+      return this.destroy({
+        where: {
+          id,
+        },
+      });
+    }
+
+    markAsCompleted() {
+      return this.update({ completed: true });
+    }
+
+    toggleCompletion() {
+      return this.update({ completed: !this.completed });
+    }
+
+    static async markSampleOverdueItemAsCompleted() {
+      const sampleOverdueItem = await this.findOne({
+        where: {
+          dueDate: {
+            [Sequelize.Op.lt]: new Date(),
+          },
           completed: false,
         },
       });
 
-      return dueLaterTodos;
-    }
-    static async completed() {
-      const completedTodos = await Todos.findAll({
-        where: {
-          completed: true          
-        },
-      });
-
-      return completedTodos;
-    }
-
-    static async getTodos() {
-      return this.findAll();
-    }
-    static async addTodo({ title, dueDate }) {
-      return this.create({
-        title: title,
-        dueDate: dueDate,
-        completed: false
-        
-      });
-    }
-    static async remove(id) {
-      return this.destroy({
-        where: {
-          id: id,          
-        },
-      });
-    }
-    markAsCompleted() {
-      return this.update({ completed: true });
-    }
-    setCompletionStatus(bool) {
-      return this.update({ completed: bool});
-    }
-    // eslint-disable-next-line no-unused-vars
-    static associate(models) {
-      // define association here
-      Todos.belongsTo(models.TodoUser, {
-        
-      });
+      if (sampleOverdueItem) {
+        await sampleOverdueItem.update({ completed: true });
+      }
     }
   }
-  Todos.init(
+
+  Todo.init(
     {
+      id: {
+        type: DataTypes.INTEGER,
+        primaryKey: true,
+        autoIncrement: true,
+      },
       title: {
         type: DataTypes.STRING,
         allowNull: false,
-        validate: {
-          notNull: true,
-          len: 5,
-        },
       },
-      dueDate: DataTypes.DATEONLY,
-      completed: { type: DataTypes.BOOLEAN, allowNull: false },
+      dueDate: {
+        type: DataTypes.DATE,
+      },
+      completed: {
+        type: DataTypes.BOOLEAN,
+        defaultValue: false,
+      },
     },
     {
       sequelize,
       modelName: "Todo",
     }
   );
+
   return Todo;
 };
