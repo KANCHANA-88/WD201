@@ -1,123 +1,104 @@
 "use strict";
-const { Model, Sequelize } = require("sequelize");
-
+const { Model, Op } = require("sequelize");
 module.exports = (sequelize, DataTypes) => {
-  class Todo extends Model {
-    static associate(models) {
-      // define association here
-    }
-
-    static addTodo({ title, dueDate }) {
-      if (!dueDate) {
-        throw new Error('Due date is required.');
-      }
-
-      return this.create({ title, dueDate, completed: false });
-    }
-
-    static getTodos() {
-      return this.findAll();
-    }
+  class Todos extends Model {
+    /**
+     * Helper method for defining associations.
+     * This method is not a part of Sequelize lifecycle.
+     * The `models/index` file will call this method automatically.
+     */
 
     static async overdue() {
-      return this.findAll({
+      const overdueTodos = await Todos.findAll({
         where: {
-          dueDate: {
-            [Sequelize.Op.lt]: new Date(),
-          },
+          dueDate: { [Op.lt]: new Date() },          
           completed: false,
         },
       });
-    }
 
-    static async completed() {
-      return this.findAll({
-        where: {
-          completed: true,
-        },
-      });
+      return overdueTodos;
     }
 
     static async dueToday() {
-      const today = new Date();
-      today.setHours(0, 0, 0, 0);
-      return this.findAll({
+      const dueTodayTodos = await Todos.findAll({
         where: {
-          dueDate: today,
+          dueDate: { [Op.eq]: new Date() },         
           completed: false,
         },
       });
+
+      return dueTodayTodos;
     }
 
     static async dueLater() {
-      const today = new Date();
-      today.setHours(0, 0, 0, 0);
-      return this.findAll({
+      const dueLaterTodos = await Todos.findAll({
         where: {
-          dueDate: {
-            [Sequelize.Op.gt]: today,
-          },
+          dueDate: { [Op.gt]: new Date() },          
           completed: false,
         },
       });
+
+      return dueLaterTodos;
+    }
+    static async completed() {
+      const completedTodos = await Todos.findAll({
+        where: {
+          completed: true          
+        },
+      });
+
+      return completedTodos;
     }
 
+    static async getTodos() {
+      return this.findAll();
+    }
+    static async addTodo({ title, dueDate }) {
+      return this.create({
+        title: title,
+        dueDate: dueDate,
+        completed: false
+        
+      });
+    }
     static async remove(id) {
       return this.destroy({
         where: {
-          id,
+          id: id,          
         },
       });
     }
-
     markAsCompleted() {
       return this.update({ completed: true });
     }
-
-    toggleCompletion() {
-      return this.update({ completed: !this.completed });
+    setCompletionStatus(bool) {
+      return this.update({ completed: bool});
     }
-
-    static async markSampleOverdueItemAsCompleted() {
-      const sampleOverdueItem = await this.findOne({
-        where: {
-          dueDate: {
-            [Sequelize.Op.lt]: new Date(),
-          },
-          completed: false,
-        },
+    // eslint-disable-next-line no-unused-vars
+    static associate(models) {
+      // define association here
+      Todos.belongsTo(models.TodoUser, {
+        
       });
-
-      if (sampleOverdueItem) {
-        await sampleOverdueItem.update({ completed: true });
-      }
     }
   }
-
-  Todo.init(
+  Todos.init(
     {
-      id: {
-        type: DataTypes.INTEGER,
-        primaryKey: true,
-        autoIncrement: true,
-      },
       title: {
         type: DataTypes.STRING,
         allowNull: false,
+        validate: {
+          notNull: true,
+          len: 5,
+        },
       },
-      dueDate: {
-        type: DataTypes.DATE,
-      },
-      completed: {
-        type: DataTypes.BOOLEAN,
-        defaultValue: false,
-      },
+      dueDate: DataTypes.DATEONLY,
+      completed: { type: DataTypes.BOOLEAN, allowNull: false },
     },
     {
       sequelize,
       modelName: "Todo",
     }
   );
-
   return Todo;
 };
