@@ -1,3 +1,5 @@
+"use strict";
+
 const express = require("express");
 const csurf = require("csurf");
 const cookieParser = require("cookie-parser");
@@ -18,10 +20,10 @@ app.use(csurf({ cookie: true }));
 
 // Custom middleware to handle CSRF token errors
 app.use((err, req, res, next) => {
-  if (err.code !== 'EBADCSRFTOKEN') return next(err)
+  if (err.code !== "EBADCSRFTOKEN") return next(err);
 
   // Handle CSRF token errors here
-  res.status(403).json({ error: 'Invalid CSRF token' });
+  res.status(403).json({ error: "Invalid CSRF token" });
 });
 
 app.set("view engine", "ejs");
@@ -71,11 +73,11 @@ app.post("/todo", async (req, res) => {
   }
 });
 
-app.put("/todo/:id/markAsCompleted", async (req, res) => {
+app.put("/todo/:id", async (req, res) => {
   try {
     const todo = await Todo.findByPk(req.params.id);
-    const updatedTodo = await todo.markAsCompleted();
-    return res.json(updatedTodo);
+    await todo.setCompletionStatus(req.body.completed);
+    return res.json(todo);
   } catch (error) {
     console.error("Error:", error);
     return res.status(500).json({ error: "Internal Server Error" });

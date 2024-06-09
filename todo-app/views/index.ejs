@@ -23,7 +23,7 @@
                     class="border border-gray-300 rounded text-gray-900 w-full p-2 text-sm leading-4	" />
             </div>
             <div class="flex-none">
-                <button type="submit" class="bg-green-600	text-white px-5 py-1.5 rounded font-medium mr-2 mb-2">
+                <button type="submit" class="bg-green-600 text-white px-5 py-1.5 rounded font-medium mr-2 mb-2">
                     Add
                 </button>
             </div>
@@ -85,8 +85,6 @@
         }
 
         function deleteTodo(id) {
-            console.log(id);
-
             fetch(`/todo/${id}`, {
                 method: "delete",
                 headers: {
